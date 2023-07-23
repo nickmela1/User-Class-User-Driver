@@ -3,11 +3,11 @@
 #include <vector>
 #include "User.h" //Custom type "User", to hold information about a user
 
-User realUser; //holds information about a User object from the convertToUser() method
+User realUser; //Holds information about a User object from the convertToUser() method
 std::vector<std::string> fileToUser; //Will hold file contents & update based on user input
 std::string inputReference; //Will reference the "input" variable in the stringLetterValidation & stringDigitValidation methods 
 int size; //Will hold the size of the fileToUser vector
-bool flag = false; //Will be used many times throughout the program
+bool flag; //Will be used many times throughout the program
 std::fstream file; //File object
 
 /**
@@ -141,8 +141,104 @@ void createUser()
    file.open("Database.txt", std::ios::out | std::ios::app); 
    file << user.easyPrintFull() << "\n";
    file.close();
+   std::cout << "\n" << user.easyPrintName() << " saved successfully!\n\n";
+}
+
+/**
+Void method overwriteMenu() - Organized the overwrite menu into its own method
+@param edit - The User number the user chose to edit
+**/
+
+void overwriteMenu(int edit)
+{
+   short menu = 0; //The menu variable is for the switch statement
    fillStringArray();
-   std::cout << "\n" << user.easyPrintName() << " saved successfully!\n";
+   do
+   {
+      do
+      {
+         std::cout << "\n-----------------------------------------------------------\n" << "User #" << edit << ": " << fileToUser[edit - 1] << "\n-----------------------------------------------------------\n\n";
+         stringDigitValidation("----------Overwrite Menu----------\n\nOverwrite first name = 1\nOverwrite last name = 2\nOverwrite age = 3\nOverwrite gender = 4\nOverwrite height = 5\nOverwrite weight = 6\nBack to main menu = 7\n\nMake selection here", 0);            
+         if(inputReference.length() > 9)
+         {
+            std::cout << "\nError: Numbers above 999,999,999 are invalid\n";
+         }
+      } while(inputReference.length() > 9);
+      menu = stoi(inputReference);
+      if(menu > 7 | menu < 1)
+      {
+         std::cout << "\n" << menu << " is not a valid option\n";            
+      }
+   } while(menu > 7 | menu < 1);
+   switch(menu)
+   {
+      case 1:
+         std::cout << "\n";
+         stringLetterValidation("Enter new first name", 0);
+         realUser._firstName = inputReference;
+         fileToUser[edit - 1] = realUser.easyPrintFull();
+         std::cout << "\nFirst name successfully updated!\n"; 
+         flag = true;
+         break;
+      case 2:
+         std::cout << "\n";
+         stringLetterValidation("Enter new last name", 0);
+         realUser._lastName = inputReference;
+         fileToUser[edit - 1] = realUser.easyPrintFull();
+         std::cout << "\nLast name successfully updated!\n";
+         flag = true;
+         break;
+      case 3:
+         std::cout << "\n";
+         stringDigitValidation("Enter new age", 0);
+         realUser._age = inputReference;
+         fileToUser[edit - 1] = realUser.easyPrintFull();
+         std::cout << "\nAge successfully updated!\n";
+         flag = true;
+         break;
+      case 4:
+         std::cout << "\n";
+         do
+         { 
+            flag = true;
+            std::cout << "Enter new gender: ";
+            std::getline(std::cin, realUser._gender);
+            if(realUser._gender != "m" && realUser._gender != "M" && realUser._gender != "f" && realUser._gender != "F")
+            {
+               flag = false;
+               std::cout <<"\nMust enter M or F\n\n";   
+            }
+         } while(!flag);
+         fileToUser[edit - 1] = realUser.easyPrintFull();
+         std::cout << "\nGender successfully updated!\n";
+         flag = true;
+         break;
+      case 5:
+         std::cout << "\n";
+         stringDigitValidation("Enter new height", 0);
+         realUser._height = inputReference;
+         fileToUser[edit - 1] = realUser.easyPrintFull();
+         std::cout << "\nHeight successfully updated!\n";
+         flag = true;
+         break;
+      case 6: 
+         std::cout << "\n";
+         stringDigitValidation("Enter new weight", 0);
+         realUser._weight = inputReference;
+         fileToUser[edit - 1] = realUser.easyPrintFull();
+         std::cout << "\nWeight successfully updated!\n";
+         flag = true;
+         break;
+      case 7:
+         std::cout << "\n";
+         return;                 
+   }
+   file.open("Database.txt", std::ios::out);
+   for(int i = 0; i < size - 1; i++)
+   {
+      file << fileToUser[i] << "\n";
+   }
+   file.close();
 }
 
 /**
@@ -152,7 +248,7 @@ Void method overwrite() - Allows the user to freely edit User objects that are s
 void overwrite()
 {
    std::string choice = ""; //The choice variable to hold the User last name/user number to edit
-   int menu, edit = 0; //The menu variable is for the switch statement, edit is the User number the user chose to edit
+   int edit = 0; //The User number the user chose to edit
    bool find, equals = false; //The find bool will return true if what the user searched for exists within the fileToUser vector, equals checks if that happens or not
    std::cout << "Enter the last name of the user to edit: ";
    std::getline(std::cin, choice);
@@ -163,13 +259,13 @@ void overwrite()
       if(find)
       {
          equals = true;
-         std::cout << "User #" << (i + 1) << ": " << fileToUser[i].substr(0, fileToUser[i].length()) + "\n";
+         std::cout << "User #" << (i + 1) << ": " << fileToUser[i] + "\n";
       }
    }
    if(!equals)
    {
       std::cout << "No results\n-----------------------------------------------------------\n\n";
-      overwrite();
+      return;
    }
    std::cout << "-----------------------------------------------------------\n\n";
    do
@@ -189,96 +285,11 @@ void overwrite()
       }
    } while(edit > size - 1 | edit < 1);
    convertToUser(fileToUser[edit - 1]);
-   do
+   overwriteMenu(edit);
+   if(flag)
    {
-      do
-      {
-         do
-         {
-            std::cout << "\n-----------------------------------------------------------\n" << "User #" << edit << ": " << fileToUser[edit - 1].substr(0, fileToUser[edit - 1].length()) << "\n-----------------------------------------------------------\n\n";
-            stringDigitValidation("----------Overwrite Menu----------\n\nOverwrite first name = 1\nOverwrite last name = 2\nOverwrite age = 3\nOverwrite gender = 4\nOverwrite height = 5\nOverwrite weight = 6\nBack to main menu = 7\n\nMake selection here", 0);            
-            if(inputReference.length() > 9)
-            {
-               std::cout << "\nError: Numbers above 999,999,999 are invalid\n";
-            }
-         } while(inputReference.length() > 9);
-         menu = stoi(inputReference);
-         if(menu > 7 | menu < 1)
-         {
-            std::cout << "\n" << menu << " is not a valid option\n";            
-         }
-      } while(menu > 7 | menu < 1);
-      switch(menu)
-      {
-         case 1:
-            std::cout << "\n";
-            stringLetterValidation("Enter new first name", 0);
-            realUser._firstName = inputReference;
-            fileToUser[edit - 1] = realUser.easyPrintFull();
-            std::cout << "\nFirst name successfully updated!\n"; 
-            flag = true;
-            break;
-         case 2:
-            std::cout << "\n";
-            stringLetterValidation("Enter new last name", 0);
-            realUser._lastName = inputReference;
-            fileToUser[edit - 1] = realUser.easyPrintFull();
-            std::cout << "\nLast name successfully updated!\n";
-            flag = true;
-            break;
-         case 3:
-            std::cout << "\n";
-            stringDigitValidation("Enter new age", 0);
-            realUser._age = inputReference;
-            fileToUser[edit - 1] = realUser.easyPrintFull();
-            std::cout << "\nAge successfully updated!\n";
-            flag = true;
-            break;
-         case 4:
-            std::cout << "\n";
-            do
-            { 
-               flag = true;
-               std::cout << "Enter new gender: ";
-               std::getline(std::cin, realUser._gender);
-               if(realUser._gender != "m" && realUser._gender != "M" && realUser._gender != "f" && realUser._gender != "F")
-               {
-                  flag = false;
-                  std::cout <<"\nMust enter M or F\n\n";   
-               }
-            } while(!flag);
-            fileToUser[edit - 1] = realUser.easyPrintFull();
-            std::cout << "\nGender successfully updated!\n";
-            flag = true;
-            break;
-         case 5:
-            std::cout << "\n";
-            stringDigitValidation("Enter new height", 0);
-            realUser._height = inputReference;
-            fileToUser[edit - 1] = realUser.easyPrintFull();
-            std::cout << "\nHeight successfully updated!\n";
-            flag = true;
-            break;
-         case 6: 
-            std::cout << "\n";
-            stringDigitValidation("Enter new weight", 0);
-            realUser._weight = inputReference;
-            fileToUser[edit - 1] = realUser.easyPrintFull();
-            std::cout << "\nWeight successfully updated!\n";
-            flag = true;
-            break;
-         case 7:
-            std::cout << "\n";
-            return;                 
-      }
-      file.open("Database.txt", std::ios::out);
-      for(int i = 0; i < size - 1; i++)
-      {
-         file << fileToUser[i] << "\n";
-      }
-      file.close();
-      fillStringArray();
-   } while(flag);
+      overwriteMenu(edit);
+   }
 }
 
 /**
@@ -287,7 +298,7 @@ Void method mainMenu() - A main menu to bring the user back to something familia
 
 void mainMenu() 
 {
-   int menu = 0; //The menu variable is used for the switch statement
+   short menu = 0; //The menu variable is used for the switch statement
    stringDigitValidation("----------Main Menu----------\n\nCreate user = 1\nOverwrite user information = 2\nExit program = 3\n\nMake selection here", 0);
    if(inputReference.length() > 1)
    {
